@@ -39,25 +39,32 @@ async function processTrainingData(trainingData) {
 }
 
 async function completeledTrainingCount(trainingData) {
-    const trainingDataCount = {};
+    const completedTrainingMap = {};
 
     trainingData.forEach(employee => {
         employee.completions.forEach(training => {
             const trainingName = training.name;
-            trainingDataCount[trainingName] = (trainingDataCount[trainingName] || 0) + 1;
+            completedTrainingMap[trainingName] = (completedTrainingMap[trainingName] || 0) + 1;
         });
     });
 
+    const trainings = [];
+    for (const [name, count] of Object.entries(completedTrainingMap)) {
+        trainings.push({ name, count });
+    }
+
     const outputFilePath = path.join(__dirname, '../output/completed_training_count.json');
 
+    const outputData = { trainings };
+
     try {
-        await fsp.writeFile(outputFilePath, JSON.stringify(trainingDataCount, null, 2), 'utf8');
+        await fsp.writeFile(outputFilePath, JSON.stringify(outputData, null, 2), 'utf8');
 
     } catch (err) {
         console.error('Error writing the completed_training_count file:', err);
     }
 
-    return trainingDataCount;
+    return outputData;
 
 }
 
