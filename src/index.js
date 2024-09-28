@@ -49,6 +49,7 @@ async function completeledTrainingCount(trainingData) {
     });
 
     const trainings = [];
+
     for (const [name, count] of Object.entries(completedTrainingMap)) {
         trainings.push({ name, count });
     }
@@ -77,15 +78,15 @@ async function completedTrainingByFiscalYear(trainingData, trainings, fiscalYear
     };
     
     trainings.forEach(trainingName => {
-        const completedBy = []; 
-    
+        const completedBy = [];
+
         trainingData.forEach(employee => {
-            const hasCompleted = employee.completions.some(completion => 
-                completion.name === trainingName && 
+            const completedTrainings = employee.completions.filter(completion => 
+                completion.name === trainingName &&
                 new Date(completion.timestamp) >= startDate && new Date(completion.timestamp) <= endDate
             );
-    
-            if (hasCompleted) {
+
+            if (completedTrainings.length > 0) {
                 completedBy.push(employee.name);
             }
         });
@@ -110,10 +111,57 @@ async function completedTrainingByFiscalYear(trainingData, trainings, fiscalYear
     return trainingCompletions;
 }
 
+async function findExpiredTrainings(trainingData, inputDate) {
+    const checkDate = new Date(inputDate);
+    const expiringSoonDate = new Date(checkDate);
+    expiringSoonDate.setMonth(expiringSoonDate.getMonth() + 1);
+
+    const expiredTrainings = {
+        employees: []
+    }
+
+    trainingData.forEach(employee => {
+        const expiringTrainings = employee.completions.filter(completion => {
+            const expirationDate = completion.expires;
+            if (expirationDate) {
+                const expiration = new Date(expirationDate);
+                return expiration < checkDate || 
+                       (expiration >= checkDate && expiration <= expiringSoonDate);
+            }
+        });
+
+        if (expiringTrainings.length > 0) {
+            const trainingDetails = expiringTrainings.map(completion => {
+                const expirationDate = new Date(completion.expires);
+                return {
+                    name: completion.name,
+                    status: expirationDate < checkDate ? 'expired' : 'expires soon'
+                };
+            });
+
+            expiredTrainings.employees.push({
+                name: employee.name,
+                trainings: trainingDetails
+            });
+        }
+    });
+
+    const outputFilePath = path.join(__dirname, '../output/expired_trainings.json');
+    
+    try {
+        await fsp.writeFile(outputFilePath, JSON.stringify(expiredTrainings, null, 2), 'utf8');
+    } catch (err) {
+        console.error('Error writing to the expired_trainings file:', err);
+    }
+
+    return expiredTrainings;
+}
+
 async function main() {
     const fileName = path.join(__dirname, '../trainings.txt');
     const fiscalYear = 2024
     const trainings = ["Electrical Safety for Labs", "X-Ray Safety", "Laboratory Safety Training"];
+    const checkExpirationDate = "2023-10-01";
 
     try {
         const trainingData = await readTrainingData(fileName);
@@ -121,6 +169,7 @@ async function main() {
 
         await completeledTrainingCount(processedTrainingData);
         await completedTrainingByFiscalYear(processedTrainingData, trainings, fiscalYear);
+        await findExpiredTrainings(processedTrainingData, checkExpirationDate);
 
     } catch(err) {
         console.error(err)
