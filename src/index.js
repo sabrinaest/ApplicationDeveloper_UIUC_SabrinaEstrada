@@ -42,15 +42,9 @@ async function completeledTrainingCount(trainingData) {
     const trainingDataCount = {};
 
     trainingData.forEach(employee => {
-        const completedTrainings = new Set(); 
-
-        employee.completions.forEach(completion => {
-            const trainingName = completion.name;
-            completedTrainings.add(trainingName); 
-        });
-
-        completedTrainings.forEach(training => {
-            trainingDataCount[training] = (trainingDataCount[training] || 0) + 1;
+        employee.completions.forEach(training => {
+            const trainingName = training.name;
+            trainingDataCount[trainingName] = (trainingDataCount[trainingName] || 0) + 1;
         });
     });
 
@@ -75,7 +69,7 @@ async function main() {
         const processedTrainingData = await processTrainingData(trainingData);
 
         await completeledTrainingCount(processedTrainingData);
-        
+
     } catch(err) {
         console.error(err)
     }
