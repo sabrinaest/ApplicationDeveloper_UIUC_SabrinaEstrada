@@ -1,19 +1,84 @@
 const fs = require('fs');
+const fsp = fs.promises;
+const path = require('path');
 
-function readTrainingData(file) {
-    fs.readFile(file, 'utf8', function (err, data) {
-        if (err) {
-            console.error('Error reading training data:', err);
-            return;
-        }
-        const trainingData = JSON.parse(data);
-        console.log(trainingData)
-    });
+async function readTrainingData(file) {
+    try {
+
+        const data = await fsp.readFile(file, 'utf8', null);
+        return JSON.parse(data);
+
+    } catch(err) {
+
+        console.error('Error reading training data:', err);
+    }
 }
 
-function main() {
-    const fileName = '../trainings.txt';
-    readTrainingData(fileName);
+async function processTrainingData(trainingData) {
+    const processedData = [];
+
+    trainingData.forEach(employee => {
+        const latestTraining = {};
+
+        employee.completions.forEach(completion => {
+            const trainingName = completion.name;
+            const completionDate = new Date(completion.timestamp);
+
+            if (!latestTraining[trainingName] || completionDate > new Date(latestTraining[trainingName].timestamp)) {
+                latestTraining[trainingName] = completion;
+            }
+        });
+
+        processedData.push({
+            name: employee.name,
+            completions: Object.values(latestTraining) 
+        });
+    });
+
+    return processedData;
+}
+
+async function completeledTrainingCount(trainingData) {
+    const trainingDataCount = {};
+
+    trainingData.forEach(employee => {
+        const completedTrainings = new Set(); 
+
+        employee.completions.forEach(completion => {
+            const trainingName = completion.name;
+            completedTrainings.add(trainingName); 
+        });
+
+        completedTrainings.forEach(training => {
+            trainingDataCount[training] = (trainingDataCount[training] || 0) + 1;
+        });
+    });
+
+    const outputFilePath = path.join(__dirname, '../output/completed_training_count.json');
+
+    try {
+        await fsp.writeFile(outputFilePath, JSON.stringify(trainingDataCount, null, 2), 'utf8');
+
+    } catch (err) {
+        console.error('Error writing the completed_training_count file:', err);
+    }
+
+    return trainingDataCount;
+
+}
+
+async function main() {
+    const fileName = path.join(__dirname, '../trainings.txt');
+
+    try {
+        const trainingData = await readTrainingData(fileName);
+        const processedTrainingData = await processTrainingData(trainingData);
+
+        await completeledTrainingCount(processedTrainingData);
+        
+    } catch(err) {
+        console.error(err)
+    }
 }
 
 main();
