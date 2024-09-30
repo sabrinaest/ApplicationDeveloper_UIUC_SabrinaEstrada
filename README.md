@@ -27,13 +27,13 @@ Thank you for considering my application for the Application Developer position 
 1. Clone the Repository:
 
    ```
-   git clone https://github.com/
+   git clone https://github.com/sabrinaest/ApplicationDeveloper_UIUC_SabrinaEstrada.git
    ```
 
 2. Navigate to the Directory:
 
    ```
-   cd 
+   cd ApplicationDeveloper_UIUC_SabrinaEstrada 
    ```
 
 3. Install the Dependencies:
