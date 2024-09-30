@@ -45,14 +45,14 @@ Thank you for considering my application for the Application Developer position 
 4. Run the application:
 
    ```
-   node src/index.js
+   npm start
    ```
 
 ## 😊 Thanks for stopping by! 
 
 Thank you for reviewing my submission! I genuinely appreciate your time and consideration, I look forward to hearing from you! Please feel free to reach out if you have any questions or need additional information.
 
-Have a great day!
+Have a wonderful day! 
 
 Sabrina Estrada
 
