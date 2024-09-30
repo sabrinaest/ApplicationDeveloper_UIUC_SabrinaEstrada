@@ -1,0 +1,12 @@
+{
+  "name": "application-developer-uiuc-sabrinaestrada",
+  "version": "1.0.0",
+  "description": "A training data processing application.",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "keywords": [],
+  "author": "Sabrina Estrada",
+  "license": "ISC"
+}
